@@ -1,129 +1,166 @@
-import Link from "next/link";
-import { ArrowDown, ArrowRight, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { RouteTransition } from "@/components/layout/route-transition";
+import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { MovieCard } from "@/features/catalog/components/movie-card";
-import { mockTitles } from "@/features/catalog/data/mock-titles";
-import { categories, type Category } from "@/constants/site";
+import { HeroCarousel } from "@/features/catalog/components/hero-carousel";
+import { ContentRow } from "@/features/catalog/components/content-row";
+import { SectionHeading } from "@/features/catalog/components/section-heading";
+import { MediaCard } from "@/features/catalog/components/media-card";
+import { CatalogState } from "@/features/catalog/components/catalog-state";
+import { collections } from "@/lib/providers/tmdb/collections";
+import { catalogResult } from "@/lib/providers/tmdb/service";
+import { categories, categoryHref } from "@/constants/site";
+import type { SearchParams } from "@/types/catalog";
+
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const active: Category =
-    categories.find((category) => category === params.category) ?? "Home";
-  const titles =
-    active === "Home"
-      ? mockTitles
-      : mockTitles.filter((title) => title.category === active);
+  const legacyCategory = categories.find(
+    (category) => category === params.category && category !== "Home",
+  );
+  if (legacyCategory) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params))
+      if (key !== "category" && typeof value === "string")
+        query.set(key, value);
+    redirect(`${categoryHref(legacyCategory)}${query.size ? `?${query}` : ""}`);
+  }
+  const definitions = [
+    {
+      id: "trending",
+      title: "Trending Now",
+      description: "The movies making waves this week.",
+      category: "Movies" as const,
+      index: 0,
+    },
+    {
+      id: "now-playing",
+      title: "Now Playing in Theaters",
+      description: "Discover current theatrical releases.",
+      category: "Movies" as const,
+      index: 1,
+    },
+    {
+      id: "popular-movies",
+      title: "Popular Movies",
+      description: "Find your next great film.",
+      category: "Movies" as const,
+      index: 2,
+    },
+    {
+      id: "top-rated",
+      title: "Top Rated Movies",
+      description: "Favorites from the TMDB community.",
+      category: "Movies" as const,
+      index: 3,
+    },
+    {
+      id: "popular-series",
+      title: "Popular TV Series",
+      description: "Your next one-more-episode obsession.",
+      category: "TV Series" as const,
+      index: 1,
+    },
+    {
+      id: "anime-spotlight",
+      title: "Anime Spotlight",
+      description: "Japanese animation. Extraordinary imagination.",
+      category: "Anime" as const,
+      index: 0,
+    },
+    {
+      id: "korean-dramas",
+      title: "Korean Dramas",
+      description: "Korean-language television with a story to tell.",
+      category: "K-Drama" as const,
+      index: 0,
+    },
+    {
+      id: "disney-collection",
+      title: "Disney Collection",
+      description:
+        "From Walt Disney Pictures, Pixar, and Disney Animation. Production credits, not Disney+ availability.",
+      category: "Disney" as const,
+      index: 0,
+    },
+  ];
+  const rows = await Promise.all(
+    definitions.map(async (definition) => {
+      const collection = collections[definition.category][definition.index]!;
+      return {
+        ...definition,
+        collection,
+        result: await catalogResult(() => collection.load(1)),
+      };
+    }),
+  );
+  const trending = rows[0]?.result;
+  const featured = trending?.ok
+    ? trending.data.items.filter((item) => item.backdropUrl).slice(0, 5)
+    : [];
   return (
-    <>
+    <RouteTransition>
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <SiteHeader active={active} />
+      <SiteHeader active="Home" />
       <main id="main">
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-art" aria-hidden="true">
-            <div className="planet" />
-            <div className="horizon" />
-            <div className="mountain mountain-back" />
-            <div className="mountain" />
-            <div className="traveler" />
+        {featured.length ? (
+          <HeroCarousel items={featured} />
+        ) : (
+          <div className="hero-unavailable">
+            <h1>Every Story. One Screen.</h1>
+            <CatalogState
+              title="Featured titles unavailable"
+              message={
+                trending && !trending.ok
+                  ? trending.message
+                  : "New stories will appear here when the catalog is available."
+              }
+            />
           </div>
-          <div className="hero-content">
-            <p className="eyebrow">
-              <span /> A WORLD OF STORIES AWAITS
-            </p>
-            <p className="featured-label">
-              FEATURED COLLECTION <span>01 / 06</span>
-            </p>
-            <h1 id="hero-title">
-              Every Story.
-              <br />
-              <span>One Screen.</span>
-            </h1>
-            <p className="hero-description">
-              Faraway worlds. Unforgettable characters. Your next obsession.
-              <br className="hidden md:block" /> Find a little of everything you
-              love, all in one place.
-            </p>
-            <div className="hero-actions">
-              <Button asChild size="lg">
-                <Link href="#trending">
-                  Explore the collection <ArrowRight aria-hidden="true" />
-                </Link>
-              </Button>
-              <a href="#featured-story" className="secondary-link">
-                Discover the featured story{" "}
-                <ArrowDown size={16} aria-hidden="true" />
-              </a>
-            </div>
-            <div className="hero-genres">
-              <span>MOVIES</span>
-              <i />
-              <span>SERIES</span>
-              <i />
-              <span>ANIME</span>
-              <i />
-              <span>& MORE</span>
-            </div>
-          </div>
-          <div id="featured-story" className="featured-story">
-            <span className="story-line" />
-            <div>
-              <p>IN THE SPOTLIGHT</p>
-              <h2>Echoes of Tomorrow</h2>
-              <span>2026 · Sci-fi / Adventure · PG-13</span>
-              <p className="spotlight-description">
-                One signal from the stars changes everything. A fictional story
-                from our preview collection.
-              </p>
-            </div>
-          </div>
-          <span className="hero-index" aria-hidden="true">
-            01 <span>/ 06</span>
-          </span>
-        </section>
-        <section
-          id="trending"
-          className="catalog-section"
-          aria-labelledby="catalog-title"
-        >
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">
-                <Sparkles size={13} aria-hidden="true" /> YOUR NEXT GREAT FIND
-              </p>
-              <h2 id="catalog-title">
-                {active === "Home" ? "Trending now" : active}
-                <span className="text-primary">.</span>
-              </h2>
-            </div>
-            <span className="collection-count">
-              {titles.length} stories to discover
-            </span>
-          </div>
-          <div className="movie-grid">
-            {titles.map((title, index) => (
-              <MovieCard key={title.id} title={title} index={index} />
-            ))}
-          </div>
-          <div className="collection-note">
-            <span className="text-primary">✦</span>
-            <p>
-              A first look at something bigger.
-              <span>
-                {" "}
-                This is our preview collection. More stories are on the horizon.
-              </span>
-            </p>
-          </div>
-        </section>
+        )}
+        <div className="catalog-content">
+          {rows.map((row) => (
+            <ContentRow
+              key={row.id}
+              id={row.id}
+              heading={
+                <SectionHeading
+                  id={row.id}
+                  title={row.title}
+                  description={row.description}
+                  href={`${categoryHref(row.category)}?collection=${row.collection.key}`}
+                />
+              }
+            >
+              {!row.result.ok ? (
+                <CatalogState
+                  title="Collection unavailable"
+                  message={row.result.message}
+                />
+              ) : row.result.data.items.length === 0 ? (
+                <CatalogState
+                  title="No titles found"
+                  message="Please check back for more stories."
+                />
+              ) : (
+                row.result.data.items.map((item, index) => (
+                  <MediaCard
+                    key={item.id}
+                    item={item}
+                    {...(row.id === "trending" ? { rank: index + 1 } : {})}
+                  />
+                ))
+              )}
+            </ContentRow>
+          ))}
+        </div>
       </main>
       <SiteFooter />
-    </>
+    </RouteTransition>
   );
 }
