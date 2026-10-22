@@ -9,6 +9,14 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  icons: {
+    icon: [
+      { url: "/branding/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/branding/favicon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/branding/favicon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/branding/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: `${site.name} — ${site.tagline}`,
     description: site.description,
@@ -22,7 +30,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );
