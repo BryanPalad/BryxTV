@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../features/auth/auth.css";
+@import "../features/watchlist/watchlist.css";
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -1504,6 +1506,13 @@ a {
 ::view-transition-new(.route-enter) {
   animation: route-arrive 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
+/* Account actions use a quick fade without the cinematic slide. */
+::view-transition-old(.auth-exit) {
+  animation: route-fade-out 80ms ease-out both;
+}
+::view-transition-new(.auth-enter) {
+  animation: route-fade-out 100ms ease-out reverse both;
+}
 ::view-transition-new(.title-enter) {
   animation: title-arrive 300ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -1569,3 +1578,318 @@ a {
 @media (max-width: 767px) {
   .site-header .brand-logo { width: 120px; }
 }
+
+/* Authorized playback and metadata-driven episode discovery. */
+.watch-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 112px clamp(16px, 4vw, 64px) 64px;
+  min-height: 75vh;
+}
+.watch-page h1 {
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  line-height: 1.15;
+  margin: 24px 0;
+}
+.watch-page h2 {
+  margin: 20px 0;
+}
+.watch-description {
+  line-height: 1.8;
+  color: #94a3b8;
+  margin: 24px 0;
+  max-width: 80ch;
+}
+.playback-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #3b82f6;
+  color: #f8fafc;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  margin: 8px 0;
+  text-decoration: none;
+}
+.playback-button:hover {
+  background: #2563eb;
+}
+.playback-button.secondary {
+  background: #111827;
+  border-color: #263244;
+}
+.playback-button:focus-visible,
+.season-form select:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 4px;
+}
+.bryxtv-player {
+  --media-accent-color: #3b82f6;
+  --media-accent-text-color: #f8fafc;
+  --media-border-color: #263244;
+  --media-border-radius: 12px;
+}
+.bryxtv-player .playback-skin {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: #080d17;
+  border: 1px solid #263244;
+}
+.bryxtv-player .playback-skin:fullscreen {
+  border: 0;
+  border-radius: 0;
+}
+.player-loading {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  background: #111827;
+  border-radius: 12px;
+}
+.player-toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.player-toolbar p,
+.player-help,
+.playback-attribution {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.playback-attribution {
+  background: #111827;
+  border: 1px solid #263244;
+  padding: 16px;
+  margin: 24px 0;
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+.playback-attribution a,
+.episode-list a:not(.playback-button) {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+.player-error {
+  background: #111827;
+  padding: 20px;
+  border: 1px solid #f87171;
+  border-radius: 10px;
+  margin-top: 12px;
+}
+.season-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.season-form select {
+  color: #f8fafc;
+  background: #111827;
+  border: 1px solid #263244;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 100%;
+}
+.episode-list {
+  display: grid;
+  list-style: none;
+  gap: 16px;
+  padding: 0;
+}
+.episode-card {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+  padding: 16px;
+  border: 1px solid #263244;
+  background: #111827;
+  border-radius: 12px;
+}
+.episode-image {
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.episode-image > * {
+  width: 100%;
+  height: 100%;
+}
+.episode-card h3 {
+  margin-bottom: 8px;
+}
+.episode-card p {
+  line-height: 1.7;
+  color: #94a3b8;
+}
+.episode-unavailable {
+  display: inline-block;
+  color: #94a3b8;
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+.watch-related {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 760px) {
+  .episode-card {
+    grid-template-columns: 1fr;
+  }
+  .episode-image {
+    max-width: 360px;
+  }
+  .watch-related {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .watch-page {
+    padding-top: 88px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bryxtv-player *,
+  .bryxtv-player *::before,
+  .bryxtv-player *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Personal viewing history shares the catalog's poster rhythm. */
+.history-card { min-width: 0; scroll-snap-align: start; }
+.history-card-link { display: block; text-decoration: none; }
+.history-poster { position: relative; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 8px; background: #111c2e; }
+.history-poster .media-image { transition: transform 220ms ease; }
+.history-card-link:hover .media-image { transform: scale(1.035); }
+.history-play { position: absolute; inset: 0; display: grid; place-items: center; color: white; font-size: 2rem; background: #03091430; opacity: 0; transition: opacity 180ms; }
+.history-card-link:hover .history-play, .history-card-link:focus-visible .history-play { opacity: 1; }
+.history-meter { height: 3px; margin: 8px 0 10px; background: #273449; border-radius: 3px; overflow: hidden; }
+.history-meter span { height: 100%; display: block; background: #3b82f6; }
+.history-card h3 { font-size: .95rem; font-weight: 600; line-height: 1.4; margin-bottom: 5px; }
+.history-card p, .history-card small { font-size: .78rem; color: #94a3b8; }
+.history-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 32px 20px; }
+.history-remove { margin-top: 12px; font-size: .78rem; color: #94a3b8; text-align: left; padding: 5px 0; cursor: pointer; }
+.history-remove:hover { color: white; }
+.history-remove:disabled { opacity: .5; cursor: wait; }
+.detail-viewing-progress { color: #94a3b8; margin-block: 16px; font-size: .9rem; }
+.history-detail-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-block: 16px; }
+@media (max-width: 1100px) { .history-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .history-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
+@media (prefers-reduced-motion: reduce) { .history-poster .media-image, .history-play { transition: none; } }
+
+.source-picker { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block: 18px; }
+.source-picker label { font-size: .9rem; font-weight: 600; }
+.source-picker select { max-width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid #334155; border-radius: 8px; background: #111c2e; color: #f8fafc; }
+.embed-frame { position: relative; aspect-ratio: 16 / 9; background: #030712; border-radius: 10px; overflow: hidden; }
+.embed-frame iframe { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+.external-player > p { margin-block: 14px; color: #94a3b8; font-size: .9rem; }
+
+/* The browser supplies the fullscreen containing block, including mobile rotation.
+   Keep the iframe out of the normal 16:9 sizing algorithm in that top layer. */
+.embed-frame:fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+  transform: none;
+  overflow: hidden;
+  background: #030712;
+}
+/* Also cover fullscreen initiated by the provider inside the iframe. */
+.embed-frame iframe:fullscreen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+.embed-frame:-webkit-full-screen,
+.embed-frame iframe:-webkit-full-screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+  transform: none;
+}
+.embed-fullscreen-exit {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 1;
+  margin: 0;
+  background: #111827;
+  border-color: #64748b;
+}
+
+/* Watch-page chrome stays compact; catalog and home layouts are unchanged. */
+.watch-layout .site-header { position: relative; height: 64px; }
+.watch-layout .header-inner { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
+.watch-layout .watch-page { padding: 20px clamp(12px, 3vw, 40px) 48px; }
+.watch-layout .watch-page h1 { margin: 12px 0 16px; font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.watch-layout .watch-page > h2 { margin: -4px 0 16px; font-size: 1rem; color: #94a3b8; }
+.watch-layout .back-link { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 0; font-size: .8rem; }
+.playback-options, .external-player { min-width: 0; }
+.watch-layout .source-picker { margin-block: 12px; gap: 8px; font-size: .85rem; }
+.source-picker select { min-width: 0; width: auto; flex: 0 1 320px; }
+.playback-provider { margin-block: 10px; font-size: .8rem; color: #94a3b8; }
+.playback-information, .playback-development { margin-block: 10px; color: #94a3b8; font-size: .85rem; }
+.playback-information summary, .playback-development summary { cursor: pointer; width: fit-content; min-height: 44px; padding-block: 12px; }
+.playback-information p, .playback-development p { line-height: 1.6; margin-block: 8px; }
+.playback-development { border-top: 1px solid #263244; padding-top: 4px; }
+.embed-retry { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; color: #60a5fa; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.playback-information summary:focus-visible, .playback-development summary:focus-visible, .embed-retry:focus-visible, .source-picker select:focus-visible { outline: 2px solid #3b82f6; outline-offset: 3px; border-radius: 4px; }
+@media (max-width: 767px) {
+  .watch-layout .watch-page { padding: 12px max(12px, env(safe-area-inset-left)) 32px max(12px, env(safe-area-inset-right)); }
+  .watch-layout .watch-page h1 { margin-block: 8px 12px; }
+  .watch-layout .embed-frame { border-radius: 6px; }
+  .watch-layout .embed-frame:fullscreen { border-radius: 0; }
+  .watch-layout .watch-description { margin-block: 16px; font-size: .9rem; }
+}
+
+.official-viewing { margin-block: 18px; color: #94a3b8; font-size: .9rem; }
+.viewing-status { color: #dbeafe; font-weight: 600; }
+.official-viewing-option { padding-block: 12px; border-bottom: 1px solid #263244; }
+.official-viewing-option strong { color: #f8fafc; }
+.official-viewing-option p { margin-block: 6px; line-height: 1.6; }
+.official-viewing-option a { min-height: 44px; }
+.official-viewing-option a:focus-visible { outline: 2px solid #3b82f6; outline-offset: 3px; }
+/* YouTube requires a minimum 200 × 200 player viewport; provider handles letterboxing. */
+.youtube-frame { min-height: 200px; }
+.official-channel-directory { margin: 16px 0 24px; color: #94a3b8; }
+.official-channel-directory summary { cursor: pointer; min-height: 44px; padding-block: 10px; color: #dbeafe; }
+.official-channel-directory p { max-width: 75ch; line-height: 1.6; }
+.official-channel-directory ul { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-block: 12px; }
+.official-channel-directory a { display: inline-flex; min-height: 44px; align-items: center; color: #60a5fa; }
+.official-channel-directory :is(a,summary):focus-visible { outline: 2px solid #3b82f6; outline-offset: 3px; }
+
+.episode-navigation { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: start; margin-block: 1.5rem; padding: 1rem; border: 1px solid var(--border); border-radius: .75rem; }
+.episode-neighbor { display: grid; gap: .5rem; min-width: 0; }
+.episode-neighbor:last-child { text-align: right; justify-items: end; }
+.episode-neighbor small { color: #94a3b8; overflow-wrap: anywhere; }
+.episode-neighbor [aria-disabled] { color: #94a3b8; padding-block: .6rem; }
+.episode-card p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 640px) { .episode-navigation { grid-template-columns: 1fr; } .episode-neighbor:last-child { text-align: left; justify-items: start; } }

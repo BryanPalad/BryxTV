@@ -30,7 +30,8 @@ export function SiteFooter() {
         <small>
           © {new Date().getFullYear()} BryxTV. Built for the love of stories.
         </small>
-        <p>Powered by TMDB · Streaming unavailable</p>
+        <p>Discovery powered by TMDB</p>
+        <Link href="/demos">Playback demos</Link>
         <Link href="/credits">Credits & attribution</Link>
       </div>
     </footer>

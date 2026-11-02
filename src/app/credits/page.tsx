@@ -53,9 +53,10 @@ export default function Credits() {
           These filters are discovery aids, not a claim of a complete catalog.
         </p>
         <p>
-          BryxTV currently offers entertainment discovery only. It does not
-          provide full movie or series playback. Official YouTube trailers, when
-          available, are clearly labeled and loaded only when requested.
+          Commercial catalog titles have no streaming source configured.
+          Official trailers are loaded only when requested. The separately labeled
+          playback demo uses a Big Buck Bunny excerpt, © 2008 Blender Foundation,
+          under CC BY 3.0. Source, license, and modification credits accompany the player.
         </p>
         <p>
           <a
