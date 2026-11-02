@@ -1,3 +1,4 @@
+import { WatchlistProvider } from "@/features/watchlist/components/watchlist-provider";
 import type { Metadata } from "next";
 import { site } from "@/constants/site";
 import "./globals.css";
@@ -31,7 +32,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" data-scroll-behavior="smooth">
-      <body>{children}</body>
+      <body><WatchlistProvider>{children}</WatchlistProvider></body>
     </html>
   );
 }

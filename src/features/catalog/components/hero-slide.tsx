@@ -1,3 +1,4 @@
+import { WatchlistButton } from "@/features/watchlist/components/watchlist-button";
 import { mediaHref } from "@/features/catalog/utils";
 import Link from "next/link";
 import { Info, Film } from "lucide-react";
@@ -45,8 +46,9 @@ export function HeroSlide({
               <Info size={18} aria-hidden="true" /> More Info
             </Link>
           </Button>
+          <WatchlistButton tmdbId={item.externalId} mediaType={item.mediaType} title={item.title} />
           <span className="preview-status">
-            <Film size={15} aria-hidden="true" /> Streaming unavailable
+            <Film size={15} aria-hidden="true" /> Explore the collection
           </span>
         </div>
       </div>

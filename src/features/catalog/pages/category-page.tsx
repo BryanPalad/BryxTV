@@ -1,3 +1,4 @@
+import { OfficialChannels } from "@/features/playback/components/official-channels";
 import { RouteTransition } from "@/components/layout/route-transition";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -64,10 +65,11 @@ export async function CategoryPage({
               : category === "Anime"
                 ? "Japanese-language animation, across movies and television."
                 : category === "K-Drama"
-                  ? "Korean-language TV dramas. Find your next great series."
+                  ? "Popular Korean-language dramas and Korean movies. Viewing availability is shown on title pages."
                   : "Fresh discoveries and unforgettable stories, powered by TMDB."}
           </p>
         </div>
+        {(category === "Anime" || category === "K-Drama") && <OfficialChannels category={category} />}
         <nav className="collection-tabs" aria-label={`${category} collections`}>
           {choices.map((choice) => (
             <Link

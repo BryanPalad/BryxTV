@@ -32,7 +32,8 @@ Webpack and Tailwind’s PostCSS adapter are retained because of the original en
 The workflow in `.github/workflows/ci.yml` runs on pushes to `main` and
 `staging`, all pull requests, and manual runs from the Actions tab. It uses
 Node.js 22, caches npm downloads, installs with `npm ci`, and runs ESLint,
-TypeScript validation, unit tests, and a production build in sequence.
+TypeScript validation, unit tests, and a production build in sequence. Prisma Client
+generation runs after installation, and the schema is validated in CI.
 Superseded runs on the same ref are canceled.
 
 CI requires no repository secrets. Tests mock the TMDB transport, and the build
@@ -78,7 +79,8 @@ Legacy `/?category=...` links redirect to the corresponding category. Existing r
 - `src/components/layout`: existing responsive header, Radix mobile drawer, and footer.
 - `src/types/catalog.ts`: normalized application models, separate from raw TMDB types.
 - `tests/tmdb.test.ts`: focused tests for normalization, type/ID collisions, image paths, validation, pagination, official trailer selection, transport authentication/cache configuration, and error handling.
-- `src/lib/auth`, `src/lib/db`: reserved future integrations, still inactive.
+- `src/lib/db`: lazy server-only Prisma client using the Neon pooled connection; CLI operations use the direct connection.
+- `src/lib/auth`: Better Auth server/client configuration, validation, safe redirects, and database-backed session protection.
 
 No mock data is imported by catalog routes. Phase 2 local artwork and its source manifest are retained for provenance and legacy redirects, not as a live-data fallback. AniList can be added as another provider adapter later.
 
@@ -105,6 +107,92 @@ This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ## Playback and future scope
 
-All catalog items have `isPlayable: false`. Only official YouTube trailer records with valid video IDs are offered, loaded from YouTube’s privacy-enhanced embed on explicit request. Trailers are labeled separately from full playback.
+TMDB catalog items retain `isPlayable: false` because metadata does not confer
+playback rights. Details pages and episode lists use an independent authorized
+source resolver. No commercial title currently has a configured source.
 
-There is no movie streaming backend, authentication, database, payment, advertising, or AniList integration in this phase.
+Visit `/demos` to try the Video.js 10 player with licensed Big Buck Bunny excerpts
+in MP4 and HLS, WebVTT captions, and browser-local resume progress. TV details now
+include season selection and episode metadata; playback links appear only for
+explicitly authorized episode sources. Official YouTube trailers remain separate.
+
+See [playback architecture and source licenses](docs/playback.md) for routes,
+source configuration, progress storage, CSP, and future provider integration.
+
+## Database foundation (Phase 5.1)
+
+Neon PostgreSQL is configured with Prisma 7.10.1 and the PostgreSQL driver adapter.
+The schema includes the four Better Auth models. `DATABASE_URL` is used for application queries;
+`DIRECT_URL` is used by the Prisma CLI. Keep both values in `.env.local`.
+
+```sh
+npm run db:validate
+npm run db:generate
+npm run db:check
+```
+
+`npm ci` generates the client automatically. The connection check runs read-only
+`SELECT 1` queries; authentication migrations are applied through the direct connection. See
+[database setup](src/lib/db/README.md) for pooling, configuration, and CI details.
+
+## Accounts (Phase 5.2)
+
+Email/password registration and login are available at `/register` and `/login`.
+The header opens sign-in for guests and an account menu for signed-in users.
+`/profile` requires a valid database session; all catalog and demo routes remain
+public. Registration is followed by a separate sign-in step, with generic duplicate
+email handling. Email verification and password reset await an email provider.
+
+Better Auth is pinned to 1.7.12. Use Node.js 22.12 or newer on the 22 line,
+matching `.nvmrc`. Existing auth environment variables are sufficient; ensure
+`BETTER_AUTH_URL` matches the exact origin shown by Next.js (currently port 3001).
+See [auth setup and manual checks](src/lib/auth/README.md).
+
+Payments, advertisements, and AniList remain inactive.
+
+
+## My List (Phase 5.4)
+
+Signed-in users can save movies and series from featured heroes and title
+pages. Poster cards open details without repeated watchlist buttons. `/my-list` provides a persistent private collection with filters, poster
+cards, pagination, removal, and an empty state. Guests sign in before saving.
+See [watchlist architecture, migration, tests, and limitations](docs/watchlist.md).
+
+Run the development-only disposable-account integration suite with:
+
+```sh
+BRYX_WATCHLIST_TEST_ORIGIN=http://localhost:3001 npm run test:watchlist:integration
+```
+
+## Viewing History (Phase 5.5)
+
+Signed-in viewers can resume authorized Video.js sources across sessions and devices.
+The homepage shows unfinished playable titles, and `/history` provides private recent
+history, filters, pagination, completion labels, and individual removal. Guests retain
+local device progress. Demos are identified separately from catalog titles.
+See [history implementation and verification](docs/history.md).
+
+```sh
+BRYX_HISTORY_TEST_ORIGIN=http://localhost:3001 npm run test:history:integration
+```
+
+The live suite refuses writes outside the known Neon development branch and removes
+only its disposable test accounts. No additional dependencies or environment keys are required.
+
+## Multi-provider playback (Phase 6)
+
+The playback registry supports `VIDEOJS_MP4`, `VIDEOJS_HLS`, and `EXTERNAL_EMBED`.
+`GET /api/playback-sources` resolves only explicitly mapped, rights-approved,
+enabled, manually verified sources. Movie and episode watch routes share a source
+selector; unsupported embeds never write fabricated viewing progress.
+
+No external film has been approved or enabled by this phase. Existing authorized
+MP4/HLS demos continue working. Before adding a full-length film, document its
+rights, its exact matching catalog identity, and a successful playback verification.
+See [provider architecture, development tooling, verification, and limitations](docs/playback-providers.md).
+
+```sh
+BRYX_PLAYBACK_TEST_ORIGIN=http://localhost:3001 npm run test:playback:integration
+```
+
+Phase 6.2 source reviews, discovery commands, episode navigation and verification results: [Content expansion](docs/content-expansion.md).
