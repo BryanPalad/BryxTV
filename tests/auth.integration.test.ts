@@ -14,6 +14,8 @@ test(
       "Live auth tests must target a local test server.",
     );
     nextEnv.loadEnvConfig(process.cwd());
+    const { verifyDevelopmentDatabase } = await import("../scripts/development-db");
+    await verifyDevelopmentDatabase();
     const { getPrisma } = await import("../src/lib/db/prisma");
     const db = getPrisma();
     const email = `bryxtv-auth-test-${randomBytes(12).toString("hex")}@example.invalid`;

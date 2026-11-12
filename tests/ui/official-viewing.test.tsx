@@ -9,14 +9,11 @@ const {OfficialViewing}=await import("../../src/features/playback/components/off
 const {officialSourceSchema}=await import("../../src/features/playback/providers/official-policy");
 import manifest from "../../src/features/playback/data/official-sources.json";
 const compilation=officialSourceSchema.parse(manifest.find(row=>row.format==="COMPILATION"));
-test("provider-only compilation exposes a safe official external link, no internal play or private review evidence",()=>{
+test("historical YouTube provider-only compilation exposes no playback link or review evidence",()=>{
  const view=render(<OfficialViewing rows={[compilation]}/>);
- const link=view.getByRole("link",{name:/Watch on Ani-One/});
- assert.equal(link.getAttribute("href"),"https://www.youtube.com/watch?v=dBdEWgtknLM");
- assert.equal(link.getAttribute("target"),"_blank");assert.match(link.getAttribute("rel")!,/noopener/);
- assert.ok(view.getByText(/Season compilation · not separate episodes/));
- assert.ok(view.getByText(/Philippines availability has not been confirmed/));
- assert.equal(view.container.querySelector('a[href^="/watch"]'),null);
+ assert.equal(view.queryByRole("link"),null);
+ assert.ok(view.getByText("No verified viewing source"));
+ assert.equal(view.queryByText(compilation.title),null);
  assert.equal(view.container.textContent!.includes(compilation.evidence),false);
  view.unmount();
 });
@@ -35,7 +32,7 @@ test("compact episode status avoids duplicate titles, language metadata and larg
  const live=render(<OfficialViewing compact playable rows={[ready]}/>);
  assert.ok(live.getByText("Watch on BryxTV"));assert.equal(live.queryByText(ready.title),null);assert.equal(live.container.querySelector("section"),null);assert.equal(live.queryByRole("link"),null);live.unmount();
  const external=render(<OfficialViewing compact rows={[compilation]}/>);
- assert.equal(external.getByRole("link").getAttribute("href"),"https://www.youtube.com/watch?v=dBdEWgtknLM");assert.equal(external.queryByText(compilation.title),null);external.unmount();
+ assert.equal(external.queryByRole("link"),null);assert.ok(external.getByText("Video Not Available"));assert.equal(external.queryByText(compilation.title),null);external.unmount();
  const unknown=render(<OfficialViewing compact rows={[{...ready,status:"UNKNOWN"}]}/>);
- assert.ok(unknown.getByText("Availability under review"));assert.equal(unknown.queryByRole("link"),null);unknown.unmount();
+ assert.ok(unknown.getByText("Video Not Available"));assert.equal(unknown.queryByRole("link"),null);unknown.unmount();
 });

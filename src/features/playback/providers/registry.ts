@@ -1,3 +1,4 @@
+import { providerEligible } from "./eligibility";
 /** Code-reviewed policy. Database rows cannot expand hostnames or capabilities. */
 export type SourceType = "VIDEOJS_MP4" | "VIDEOJS_HLS" | "EXTERNAL_EMBED";
 export interface ProviderDefinition {
@@ -25,7 +26,7 @@ export function validArchiveEmbed(value: string) {
   return value === "https://archive.org/embed/valkaama";
 }
 export function providerAllowsURL(provider: ProviderDefinition, value: string) {
-  if (!provider.validateURL(value)) return false;
+  if (!providerEligible(provider.slug, value) || !provider.validateURL(value)) return false;
   if (!provider.allowedHostnames.length) return provider.type !== "EXTERNAL_EMBED" && value.startsWith("/playback/");
   try {
     const url = new URL(value);
@@ -46,8 +47,8 @@ export const providers = defineRegistry([
   { slug: "local-mp4", name: "BryxTV MP4", type: "VIDEOJS_MP4", enabled: true, allowedHostnames: [], fullscreen: true, progressTracking: "videojs", availabilityCheck: "manual", validateURL: value => localMedia(value, "mp4") },
   { slug: "local-hls", name: "BryxTV HLS", type: "VIDEOJS_HLS", enabled: true, allowedHostnames: [], fullscreen: true, progressTracking: "videojs", availabilityCheck: "manual", validateURL: value => localMedia(value, "m3u8") },
   // URL policy is ready; no film is approved merely because it is on YouTube.
-  { slug: "youtube-privacy", name: "YouTube", type: "EXTERNAL_EMBED", enabled: true, allowedHostnames: ["www.youtube-nocookie.com"], fullscreen: true, progressTracking: "unsupported", availabilityCheck: "manual", validateURL: validYouTubeEmbed },
+  { slug: "youtube-privacy", name: "YouTube", type: "EXTERNAL_EMBED", enabled: false, allowedHostnames: ["www.youtube-nocookie.com"], fullscreen: true, progressTracking: "unsupported", availabilityCheck: "manual", validateURL: validYouTubeEmbed },
 ]);
-export const playbackFrameOrigins = [...new Set([...providers.values()].filter(p => p.enabled && p.type === "EXTERNAL_EMBED").flatMap(p => p.allowedHostnames.map(host => `https://${host}`)))];
+export const playbackFrameOrigins = [...new Set([...providers.values()].filter(p => p.enabled && providerEligible(p.slug) && p.type === "EXTERNAL_EMBED").flatMap(p => p.allowedHostnames.map(host => `https://${host}`)))];
 
-export const playbackMediaOrigins = [...new Set([...providers.values()].filter(p => p.enabled && p.type !== "EXTERNAL_EMBED").flatMap(p => p.allowedHostnames.map(host => `https://${host}`)))];
+export const playbackMediaOrigins = [...new Set([...providers.values()].filter(p => p.enabled && providerEligible(p.slug) && p.type !== "EXTERNAL_EMBED").flatMap(p => p.allowedHostnames.map(host => `https://${host}`)))];

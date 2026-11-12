@@ -36,7 +36,7 @@ test("development source API verifies policy, identity, ordering, pending status
 
     await db.playbackSource.update({where:{id:two.id},data:{authorizationVerified:false}});body=await (await get(`mediaType=movie&tmdbId=${tmdbId}`)).json();assert.equal(body.sources.length,1);
     await db.playbackSource.update({where:{id:one.id},data:{availabilityStatus:"UNAVAILABLE"}});body=await (await get(`mediaType=movie&tmdbId=${tmdbId}`)).json();assert.equal(body.sources.length,0);assert.equal(body.unavailable,true);
-    assert.equal((await continuing()).length,0);assert.equal((await db.viewingProgress.findFirst({where:{userId:ownedUser.id}}))?.positionSeconds,30);
+    const unavailableHistory=await continuing();assert.equal(unavailableHistory.length,1);assert.equal(unavailableHistory[0].watchHref,null);assert.equal(unavailableHistory[0].detailsHref,`/movie/${tmdbId}`);assert.equal((await db.viewingProgress.findFirst({where:{userId:ownedUser.id}}))?.positionSeconds,30);
     for(const episodeNumber of [1,2]){const row=await db.playbackSource.create({data:{...data,mediaType:"tv",contentKey:`tv:${tmdbId}:1:${episodeNumber}`,seasonNumber:1,episodeNumber}});sourceIds.push(row.id);}
     assert.equal((await get(`mediaType=tv&tmdbId=${tmdbId}`)).status,400);
     body=await (await get(`mediaType=tv&tmdbId=${tmdbId}&seasonNumber=1&episodeNumber=2`)).json();assert.equal(body.pending,true);
@@ -51,37 +51,36 @@ test("development source API verifies policy, identity, ordering, pending status
   }
 });
 
-test("reviewed official catalog keeps internal, provider-only, candidate and unavailable states separate",{skip:!origin,timeout:120000},async()=>{
+test("historical YouTube catalog is excluded from public APIs and pages",{skip:!origin,timeout:120000},async()=>{
  const {verifyDevelopmentDatabase}=await import("../scripts/development-db");nextEnv.loadEnvConfig(process.cwd());await verifyDevelopmentDatabase();
  async function query(path:string){const response=await fetch(new URL(path,origin!));assert.equal(response.status,200);return response.json();}
  const playable=await query('/api/playback-sources?mediaType=tv&tmdbId=63926&seasonNumber=3&episodeNumber=1');
- assert.equal(playable.availability,"WATCH_ON_BRYXTV");assert.equal(playable.sources.length,1);assert.equal(playable.sources[0].sourceUrl,"https://www.youtube-nocookie.com/embed/t7KlZ38p39w");
- assert.equal(playable.sources[0].progressTracking,"unsupported");assert.equal(JSON.stringify(playable).includes("evidence"),false);
+ assert.equal(playable.availability,"UNAVAILABLE");assert.deepEqual(playable.sources,[]);assert.equal(JSON.stringify(playable).includes("evidence"),false);
  const wrong=await query('/api/playback-sources?mediaType=tv&tmdbId=63926&seasonNumber=1&episodeNumber=25');assert.equal(wrong.sources.length,0);
- const candidate=await query('/api/playback-sources?mediaType=movie&tmdbId=640828');assert.equal(candidate.availability,"UNKNOWN");assert.equal(candidate.sources.length,0);
+ const candidate=await query('/api/playback-sources?mediaType=movie&tmdbId=640828');assert.equal(candidate.availability,"UNAVAILABLE");assert.equal(candidate.sources.length,0);
  const compilationEpisode=await query('/api/playback-sources?mediaType=tv&tmdbId=244625&seasonNumber=1&episodeNumber=1');assert.equal(compilationEpisode.availability,"UNAVAILABLE");assert.equal(compilationEpisode.sources.length,0);
  const {getPrisma}=await import("../src/lib/db/prisma");const db=getPrisma();
  const valkaama=await db.playbackSource.findUnique({where:{id:"cmvl2hp6x0000edsb4r2a9mqi"}});assert.equal(valkaama?.enabled,false);assert.equal(valkaama?.availabilityStatus,"UNKNOWN");
- const internal=await fetch(new URL('/watch/tv/63926?season=3&episode=1',origin!));const internalHTML=await internal.text();assert.equal(internal.status,200);assert.ok(internalHTML.includes('youtube-nocookie.com/embed/t7KlZ38p39w'));assert.equal(internalHTML.includes('Development verification'),false);
- const external=await fetch(new URL('/tv/244625',origin!));const externalHTML=await external.text();assert.equal(external.status,200);assert.ok(externalHTML.includes('https://www.youtube.com/watch?v=dBdEWgtknLM'));assert.equal(externalHTML.includes('href="/watch/tv/244625?'),false);
+ const internal=await fetch(new URL('/watch/tv/63926?season=3&episode=1',origin!));const internalHTML=await internal.text();assert.equal(internal.status,200);assert.equal(internalHTML.includes('youtube-nocookie.com/embed/t7KlZ38p39w'),false);assert.ok(internalHTML.includes('This episode is currently unavailable'));assert.ok(internalHTML.includes('Back to Episodes'));assert.equal(internalHTML.includes('Development verification'),false);
+ const external=await fetch(new URL('/tv/244625',origin!));const externalHTML=await external.text();assert.equal(external.status,200);assert.equal(externalHTML.includes('https://www.youtube.com/watch?v=dBdEWgtknLM'),false);assert.equal(externalHTML.includes('href="/watch/tv/244625?'),false);
 });
 
-test("expanded approved anime resolves publicly; episode navigation and watchable rows do not promote candidates",{skip:!origin,timeout:120000},async()=>{
+test("excluded anime stays metadata-only; adjacent navigation does not skip unavailable episodes",{skip:!origin,timeout:120000},async()=>{
  nextEnv.loadEnvConfig(process.cwd());
  const {verifyDevelopmentDatabase}=await import("../scripts/development-db");await verifyDevelopmentDatabase();
  async function request(path:string) { const response=await fetch(new URL(path,origin!),{signal:AbortSignal.timeout(30000)});assert.equal(response.status,200);return response; }
- for(const [id,season,episode,video] of [[63926,3,2,"gew-sOx4oyA"],[1429,1,1,"eGjGTYyq41c"]] as const){
+ for(const [id,season,episode] of [[63926,3,2],[1429,1,1]] as const){
   const response=await request(`/api/playback-sources?mediaType=tv&tmdbId=${id}&seasonNumber=${season}&episodeNumber=${episode}`);
-  assert.equal(response.status,200);const body=await response.json();assert.equal(body.availability,"WATCH_ON_BRYXTV");assert.equal(body.sources.length,1);assert.equal(body.sources[0].sourceUrl,`https://www.youtube-nocookie.com/embed/${video}`);assert.equal(body.sources[0].progressTracking,"unsupported");
+  assert.equal(response.status,200);const body=await response.json();assert.equal(body.availability,"UNAVAILABLE");assert.deepEqual(body.sources,[]);
  }
- const candidate=await(await request('/api/playback-sources?mediaType=tv&tmdbId=72165&seasonNumber=1&episodeNumber=1')).json();assert.equal(candidate.availability,"UNKNOWN");assert.deepEqual(candidate.sources,[]);
+ const candidate=await(await request('/api/playback-sources?mediaType=tv&tmdbId=72165&seasonNumber=1&episodeNumber=1')).json();assert.equal(candidate.availability,"UNAVAILABLE");assert.deepEqual(candidate.sources,[]);
  const {JSDOM}=await import("jsdom");
  const hrefs=(element:Element)=>Array.from(element.querySelectorAll("a")).map(a=>a.getAttribute("href"));
  const first=new JSDOM(await(await request('/watch/tv/63926?season=3&episode=1')).text());
- const next=first.window.document.querySelector('nav[aria-label="Episode navigation"]');assert.ok(next);assert.match(next!.textContent!,/Next Episode/);assert.ok(hrefs(next!).includes("/watch/tv/63926?season=3&episode=2"),next!.outerHTML);
+ const next=first.window.document.querySelector('nav[aria-label="Episode navigation"]');assert.ok(next);assert.match(next!.textContent!,/Next Episode/);assert.equal(hrefs(next!).includes("/watch/tv/63926?season=3&episode=2"),false);assert.match(next!.textContent!,/Next Episode — Unavailable/);
  const second=new JSDOM(await(await request('/watch/tv/63926?season=3&episode=2')).text());
- const nav=second.window.document.querySelector('nav[aria-label="Episode navigation"]')!;assert.ok(hrefs(nav).includes("/watch/tv/63926?season=3&episode=1"));assert.match(nav.textContent!,/Next Episode — Unavailable/);assert.equal(hrefs(nav).some(href=>href?.includes("episode=3")),false);assert.ok(nav.querySelector('a[href="/tv/63926?season=3#episodes-heading"]'));
+ const nav=second.window.document.querySelector('nav[aria-label="Episode navigation"]')!;assert.equal(hrefs(nav).includes("/watch/tv/63926?season=3&episode=1"),false);assert.match(nav.textContent!,/Previous Episode — Unavailable/);assert.match(nav.textContent!,/Next Episode — Unavailable/);assert.equal(hrefs(nav).some(href=>href?.includes("episode=3")),false);assert.ok(nav.querySelector('a[href="/tv/63926?season=3#episodes-heading"]'));
  const home=new JSDOM(await(await request('/')).text());
- const watchable=home.window.document.getElementById('watchable-anime');assert.ok(watchable);assert.ok(watchable!.querySelector('a[href="/tv/1429"]'));assert.ok(watchable!.querySelector('a[href="/tv/63926"]'));assert.equal(home.window.document.getElementById('watchable-k-dramas'),null);
+ const watchable=home.window.document.getElementById('watchable-anime');assert.equal(watchable,null);assert.equal(home.window.document.getElementById('watchable-k-dramas'),null);
  for(const dom of [first,second,home])dom.window.close();
 });

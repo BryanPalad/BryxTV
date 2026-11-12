@@ -1,3 +1,4 @@
+import { providerEligible } from "../src/features/playback/providers/eligibility";
 import nextEnv from "@next/env";
 import {
   officialProviders,
@@ -12,6 +13,7 @@ const channels: Partial<Record<OfficialProvider, string>> = {
   "kbs-world": "UC5BMQOsAB8hKUyHu9KI6yig",
 };
 async function main() {
+  if (!providerEligible("youtube-privacy")) throw new Error("YouTube discovery is inactive under the current provider policy.");
   const [provider, url] = process.argv.slice(2);
   if (
     !provider ||

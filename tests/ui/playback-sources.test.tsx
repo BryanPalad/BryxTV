@@ -8,9 +8,15 @@ const {render,fireEvent,waitFor}=await import("@testing-library/react");
 const {SourceSelector}=await import("../../src/features/playback/components/source-selector");
 const {EmbeddedPlayer}=await import("../../src/features/playback/components/embedded-player");
 import type {PlaybackOption} from "../../src/features/playback/providers/types";
+const { TrailerPlayer } = await import("../../src/features/catalog/components/trailer-player");
+// Test-only in-memory provider. No application registry, remote request or source approval changes.
+const { providers } = await import("../../src/features/playback/providers/registry");
+import type { ProviderDefinition } from "../../src/features/playback/providers/registry";
+(providers as Map<string, ProviderDefinition>).set("fixture", {slug:"fixture", name:"Fixture", type:"EXTERNAL_EMBED", enabled:true, allowedHostnames:["player.example.invalid"], fullscreen:true, progressTracking:"unsupported", availabilityCheck:"manual", validateURL: url => /^https:\/\/player\.example\.invalid\/embed\/[a-z0-9]+$/.test(url)});
+after(() => (providers as Map<string, ProviderDefinition>).delete("fixture"));
 // Synthetic iframe fixtures: URL validation only, never fetched or claimed licensed/playable.
-const first:PlaybackOption={id:"one",provider:"YouTube",label:"Fixture one",type:"EXTERNAL_EMBED",sourceUrl:"https://www.youtube-nocookie.com/embed/M7lc1UVf-VE",progressTracking:"unsupported",fullscreen:true,video:null};
-const second={...first,id:"two",label:"Fixture two",sourceUrl:"https://www.youtube-nocookie.com/embed/abcdefghijk"};
+const first:PlaybackOption={id:"one",provider:"Fixture",label:"Fixture one",type:"EXTERNAL_EMBED",sourceUrl:"https://player.example.invalid/embed/one",progressTracking:"unsupported",fullscreen:true,video:null};
+const second={...first,id:"two",label:"Fixture two",sourceUrl:"https://player.example.invalid/embed/two"};
 test("source selection switches approved frames, persists per target, and explains unsupported resume",async()=>{
   const view=render(<SourceSelector sources={[first,second]} targetKey="movie:42" />);
   assert.equal(view.container.querySelector("iframe")!.getAttribute("src"),first.sourceUrl);
@@ -110,8 +116,29 @@ test("multiple sources follow the video with short labels, accessible details an
   assert.ok(frame.compareDocumentPosition(selector)&dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
   assert.equal(view.container.querySelector(".playback-development"),null);
   assert.equal(view.queryByText(/Manually verified/),null);
-  assert.deepEqual(Array.from(view.container.querySelectorAll("option")).map(option=>option.textContent),["YouTube · 1","YouTube · 2"]);
+  assert.deepEqual(Array.from(view.container.querySelectorAll("option")).map(option=>option.textContent),["Fixture · 1","Fixture · 2"]);
   assert.equal(view.container.querySelector("option")!.title,"Fixture one");
-  assert.match(view.getByText("YouTube: Fixture one").textContent!,/Fixture one/);
+  assert.match(view.getByText("Fixture: Fixture one").textContent!,/Fixture one/);
+  view.unmount();
+});
+
+test("stale YouTube preferences, preview flags and aliased media types cannot initialize players", () => {
+  const excluded: PlaybackOption = {...first, id:"historical", provider:"YouTube", sourceUrl:"https://www.youtube-nocookie.com/embed/t7KlZ38p39w", preview:true};
+  sessionStorage.setItem("bryxtv:source:excluded", excluded.id);
+  const view = render(<SourceSelector sources={[excluded, first]} targetKey="excluded" preferredId={excluded.id} />);
+  assert.equal(view.container.querySelector("iframe")?.getAttribute("src"), first.sourceUrl);
+  assert.equal(view.queryByText("YouTube"), null); view.unmount();
+  for (const source of [excluded, {...excluded, provider:"BryxTV MP4", type:"VIDEOJS_MP4" as const}]) {
+    const blocked = render(<SourceSelector sources={[source]} targetKey="blocked" />);
+    assert.equal(blocked.container.querySelector("iframe,video"), null);
+    assert.ok(blocked.getByText("Video Not Available")); blocked.unmount();
+  }
+  const direct = render(<EmbeddedPlayer source={excluded} />);
+  assert.equal(direct.container.querySelector("iframe"), null); direct.unmount();
+});
+
+test("YouTube trailers cannot render a play control or iframe", () => {
+  const view=render(<TrailerPlayer trailer={{key:"abcdefghijk",name:"Historical trailer"}} />);
+  assert.equal(view.container.querySelector("button,iframe,video"),null);
   view.unmount();
 });

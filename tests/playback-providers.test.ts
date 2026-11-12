@@ -26,8 +26,7 @@ test("source resolution excludes unapproved, disabled, unverified and unknown ro
   const result=resolvedOptions([{...row,id:"second",priority:50},{...row,id:"first",priority:1}],target);
   assert.deepEqual(result.map(s=>s.id),["first","second"]);assert.equal(result[0]?.video?.mediaId,target.mediaId);
   assert.equal("authorizationEvidence" in result[0]!,false);assert.equal("providerId" in result[0]!,false);
-  const embed=resolvedOptions([{...row,sourceUrl:"https://www.youtube-nocookie.com/embed/M7lc1UVf-VE",provider:{slug:"youtube-privacy",type:"EXTERNAL_EMBED",enabled:true}}],target)[0]!;
-  assert.equal(embed.video,null);assert.equal(embed.progressTracking,"unsupported");
+  assert.deepEqual(resolvedOptions([{...row,sourceUrl:"https://www.youtube-nocookie.com/embed/M7lc1UVf-VE",provider:{slug:"youtube-privacy",type:"EXTERNAL_EMBED",enabled:true}}],target),[]);
 });
 test("canonical identifiers separate movies and episodes; guests retain approved local demos",()=>{
   assert.equal(progressKey(progressIdentity.parse({mediaType:"movie",tmdbId:42})),"movie:42");
@@ -38,8 +37,8 @@ test("canonical identifiers separate movies and episodes; guests retain approved
 });
 test("CSP derives exact frame origins and retains existing authentication and media protections",async()=>{
   const headers=await config.headers!();const csp=headers[0]!.headers.find(header=>header.key==="Content-Security-Policy")!.value;
-  assert.deepEqual(playbackFrameOrigins,["https://archive.org","https://www.youtube-nocookie.com"]);
-  assert.match(csp,/frame-src https:\/\/archive.org https:\/\/www.youtube-nocookie.com;/);assert.match(csp,/frame-ancestors 'none'/);assert.match(csp,/form-action 'self'/);assert.match(csp,/media-src 'self' blob:/);assert.doesNotMatch(csp,/frame-src[^;]*\*/);
+  assert.deepEqual(playbackFrameOrigins,["https://archive.org"]);
+  assert.match(csp,/frame-src https:\/\/archive.org;/);assert.match(csp,/frame-ancestors 'none'/);assert.match(csp,/form-action 'self'/);assert.match(csp,/media-src 'self' blob:/);assert.doesNotMatch(csp,/frame-src[^;]*\*/);
 });
 
 test("Archive policy permits only the reviewed Valkaama embed and previews cannot become public approval",()=>{

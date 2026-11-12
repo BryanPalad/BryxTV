@@ -88,10 +88,11 @@ export async function WatchPage({
         ) : (
           <section className="playback-notice">
             <div>
-              <h2>{resolution.pending ? "Playback pending verification" : "Video Not Available"}</h2>
+              <h2>{resolution.pending ? "Playback pending verification" : type === "tv" ? "This episode is currently unavailable" : "This title is currently unavailable"}</h2>
               <p>
-                {resolution.failed ? "Playback sources could not be loaded. Please reload to retry." : resolution.pending ? "Sources are awaiting playback verification. They are not yet available to play." : "No approved, verified playback source is currently available for this title."}
+                {resolution.failed ? "Playback sources could not be loaded. Please reload to retry." : resolution.pending ? "Sources are awaiting playback verification. They are not yet available to play." : "We haven’t found an approved playback source for this title yet."}
               </p>
+              <Link className="playback-button" href={type === "tv" ? `/tv/${id}${season !== null && season !== undefined ? `?season=${season}` : ""}#episodes-heading` : `/movie/${id}`}>{type === "tv" ? "Back to Episodes" : "Back to details"}</Link>
               {!validEpisode && (
                 <p>Select a season and episode below to check availability.</p>
               )}

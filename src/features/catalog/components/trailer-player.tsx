@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { providerEligible } from "@/features/playback/providers/eligibility";
 import { Play } from "lucide-react";
 import type { Trailer } from "@/types/catalog";
 export function TrailerPlayer({ trailer }: { trailer: Trailer }) {
   const [playing, setPlaying] = useState(false);
+  if (!providerEligible("youtube-privacy")) return <p className="section-message">An official supported trailer is not available for this title.</p>;
   return (
     <div className="trailer-player">
       {playing ? (

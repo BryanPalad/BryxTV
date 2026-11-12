@@ -1,5 +1,6 @@
 import {
   officialProviders,
+  officialSourceEligible,
   officialWatchUrl,
   viewingState,
   officialEmbedReady,
@@ -16,7 +17,7 @@ export function OfficialViewing({
   pending?: boolean;
   compact?: boolean;
 }) {
-  rows = rows.filter((row) => row.enabled);
+  rows = rows.filter((row) => row.enabled && officialSourceEligible(row));
   const state = viewingState(playable, rows, pending);
   if (compact) {
     const external =

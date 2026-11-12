@@ -1,0 +1,264 @@
+{
+  "fixture": true,
+  "catalog": [
+    {
+      "mediaType": "tv",
+      "tmdbId": 200000001,
+      "title": "Fixture Anime",
+      "aliases": [],
+      "originalLanguage": "ja",
+      "genres": [
+        16
+      ],
+      "popularity": 20,
+      "releaseDate": "2026-01-01",
+      "seasons": [
+        {
+          "number": 1,
+          "episodes": [
+            {
+              "number": 1,
+              "title": "Test Story 1",
+              "airDate": "2026-01-01"
+            },
+            {
+              "number": 2,
+              "title": "Test Story 2",
+              "airDate": "2026-01-01"
+            },
+            {
+              "number": 3,
+              "title": "Test Story 3",
+              "airDate": "2026-01-01"
+            },
+            {
+              "number": 4,
+              "title": "Test Story 4",
+              "airDate": "2026-01-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mediaType": "tv",
+      "tmdbId": 200000002,
+      "title": "Fixture Drama",
+      "aliases": [],
+      "originalLanguage": "ko",
+      "genres": [
+        18
+      ],
+      "popularity": 20,
+      "releaseDate": "2026-01-01",
+      "seasons": [
+        {
+          "number": 1,
+          "episodes": [
+            {
+              "number": 1,
+              "title": "Drama Story 1",
+              "airDate": "2026-01-01"
+            },
+            {
+              "number": 2,
+              "title": "Drama Story 2",
+              "airDate": "2026-01-01"
+            },
+            {
+              "number": 3,
+              "title": "Drama Story 3",
+              "airDate": "2026-01-01"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "videos": [
+    {
+      "id": "fxVideo0001",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime - S1E01 - Test Story 1 [EN Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 1440,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0002",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime - S1E02 - Test Story 2 [EN Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 1440,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0003",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime - S1E03 - Test Story 3 [EN Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 1440,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0004",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime - S1E04 - Test Story 4 [EN Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 1440,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0005",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime Full Season Episode 1-4",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 5760,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0006",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime Official Trailer",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 180,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0007",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime Episode 25 [EN Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 1440,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0008",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime S1E05 [EN Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 1440,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": [
+        "PH"
+      ],
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0009",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime Full Movie",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 5400,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0010",
+      "channelId": "UC6sKhWSlPSWIh6e4ukisDHQ",
+      "title": "Fixture Anime #shorts",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 50,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0011",
+      "channelId": "UC5BMQOsAB8hKUyHu9KI6yig",
+      "title": "Fixture Drama - Season 1 Ep.1 - Drama Story 1 [ENG Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 3600,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0012",
+      "channelId": "UC5BMQOsAB8hKUyHu9KI6yig",
+      "title": "Fixture Drama - Season 1 Ep.2 - Drama Story 2 [ENG Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 3600,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0013",
+      "channelId": "UC5BMQOsAB8hKUyHu9KI6yig",
+      "title": "Fixture Drama - Season 1 Ep.3 - Drama Story 3 [ENG Sub]",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 3600,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    },
+    {
+      "id": "fxVideo0014",
+      "channelId": "UC5BMQOsAB8hKUyHu9KI6yig",
+      "title": "Fixture Drama Highlights Ep.4",
+      "description": "Fixture only. Synthetic publisher episode description. English subtitles claimed, not verified.",
+      "durationSeconds": 600,
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "embeddable": true,
+      "public": true,
+      "allowedRegions": null,
+      "blockedRegions": null,
+      "captionFlag": true
+    }
+  ]
+}

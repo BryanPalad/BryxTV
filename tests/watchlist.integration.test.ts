@@ -7,6 +7,7 @@ test("development watchlist: real database uniqueness, ownership, persistence an
   const base=new URL(origin!);
   assert.ok(["localhost","127.0.0.1"].includes(base.hostname));
   nextEnv.loadEnvConfig(process.cwd());
+  const {verifyDevelopmentDatabase}=await import("../scripts/development-db");await verifyDevelopmentDatabase();
   const {getPrisma}=await import("../src/lib/db/prisma");const db=getPrisma();
   const branch=await db.$queryRaw<{id:string}[]>`SELECT current_setting('neon.branch_id',true) AS id`;
   assert.equal(branch[0]?.id,"br-raspy-sun-az80iq7r","Refuse writes outside verified development branch");

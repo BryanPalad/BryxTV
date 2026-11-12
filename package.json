@@ -20,7 +20,9 @@
     "test:history:integration": "node --conditions=react-server --import tsx --test tests/history.integration.test.ts",
     "playback:manage": "node --conditions=react-server --import tsx scripts/playback-sources.ts",
     "test:playback:integration": "node --conditions=react-server --import tsx --test tests/playback-providers.integration.test.ts",
-    "playback:discover": "node --import tsx scripts/discover-official-video.ts"
+    "playback:discover": "node --import tsx scripts/discover-official-video.ts",
+    "content:discover": "node --conditions=react-server --import tsx scripts/content-discover.ts",
+    "content:review": "node --conditions=react-server --import tsx scripts/content-review.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "1.7.12",

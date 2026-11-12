@@ -20,7 +20,7 @@ const row = {
   episodeNumber: 1,
 };
 test("watchable rows require current DB approval AND exact official manifest mapping", () => {
-  assert.deepEqual(verifiedCatalogTitleIds([row, row]), [63926]);
+  assert.deepEqual(verifiedCatalogTitleIds([row, row]), []);
   for (const patch of [
     { enabled: false },
     { authorizationVerified: false },
@@ -35,4 +35,10 @@ test("watchable rows require current DB approval AND exact official manifest map
     { provider: { ...row.provider, enabled: false } },
   ])
     assert.deepEqual(verifiedCatalogTitleIds([{ ...row, ...patch }]), []);
+});
+
+test("eligible approved non-YouTube episodes remain in watchable rows", () => {
+  const local = {...row, sourceUrl: "/playback/sample.mp4", provider: {slug: "local-mp4", type: "VIDEOJS_MP4", enabled: true}};
+  assert.deepEqual(verifiedCatalogTitleIds([row, local]), [63926]);
+  assert.deepEqual(verifiedCatalogTitleIds([{...local, availabilityStatus: "UNKNOWN"}]), []);
 });

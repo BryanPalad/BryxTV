@@ -6,6 +6,7 @@ const origin=process.env.BRYX_HISTORY_TEST_ORIGIN;
 test("development history API: isolation, uniqueness, stale updates, pagination, completion and persistence",{skip:!origin,timeout:180000},async()=>{
   const base=new URL(origin!);assert.ok(["localhost","127.0.0.1"].includes(base.hostname));
   nextEnv.loadEnvConfig(process.cwd());
+  const {verifyDevelopmentDatabase}=await import("../scripts/development-db");await verifyDevelopmentDatabase();
   const {getPrisma}=await import("../src/lib/db/prisma");const db=getPrisma();
   const branch=await db.$queryRaw<{id:string}[]>`SELECT current_setting('neon.branch_id',true) AS id`;assert.equal(branch[0]?.id,"br-raspy-sun-az80iq7r","Refuse writes outside development");
   const owned:{id:string;email:string}[]=[],cookies:string[]=[];
@@ -38,9 +39,9 @@ test("development history API: isolation, uniqueness, stale updates, pagination,
     assert.equal(await db.viewingProgress.count({where:{userId:owned[0]!.id,mediaType:"tv"}}),2);
     assert.equal((await (await call("/api/viewing-progress/tv/42?season=1&episode=2","GET",undefined,cookies[0])).json()).progress.episodeNumber,2);
     assert.equal((await put(demo,cookies[0],{positionSeconds:3,durationSeconds:10})).status,200);
-    result=await call("/api/viewing-progress?continue=1","GET",undefined,cookies[0]);let page=await result.json();assert.equal(page.items.length,1);assert.equal(page.items[0].watchHref,"/watch/demo/big-buck-bunny");
+    result=await call("/api/viewing-progress?continue=1","GET",undefined,cookies[0]);let page=await result.json();assert.equal(page.items.length,4);assert.equal(page.items[0].watchHref,"/watch/demo/big-buck-bunny");assert.ok(page.items.slice(1).every((item:{watchHref:string|null;detailsHref:string})=>item.watchHref===null&&item.detailsHref.startsWith("/")));
     assert.equal((await put(demo,cookies[0],{positionSeconds:10,durationSeconds:10,ended:true,observedAt:Date.now()})).status,200);
-    assert.equal((await (await call("/api/viewing-progress?continue=1","GET",undefined,cookies[0])).json()).items.length,0);
+    assert.equal((await (await call("/api/viewing-progress?continue=1","GET",undefined,cookies[0])).json()).items.length,3);
     page=await (await call("/api/viewing-progress?type=demo","GET",undefined,cookies[0])).json();assert.equal(page.items[0].completed,true);
     // Seed only this disposable user's own rows to verify real pagination without expensive repeated metadata.
     await db.viewingProgress.createMany({data:Array.from({length:25},(_,i)=>({userId:owned[0]!.id,contentKey:`movie:${1000000000+i}`,mediaType:"movie",tmdbId:1000000000+i,positionSeconds:10,durationSeconds:100,observedAt:new Date()}))});

@@ -1,3 +1,5 @@
+> Phase 6.2.3: YouTube playback and external viewing links are excluded. YouTube discovery is inactive; do not configure API credentials or run live discovery. Historical code, fixtures and reports are retained. See `docs/youtube-exclusion.md`.
+
 # BryxTV
 
 **Every Story. One Screen.**
@@ -114,7 +116,7 @@ source resolver. No commercial title currently has a configured source.
 Visit `/demos` to try the Video.js 10 player with licensed Big Buck Bunny excerpts
 in MP4 and HLS, WebVTT captions, and browser-local resume progress. TV details now
 include season selection and episode metadata; playback links appear only for
-explicitly authorized episode sources. Official YouTube trailers remain separate.
+explicitly authorized episode sources. YouTube playback, including trailers, is excluded by the current provider policy.
 
 See [playback architecture and source licenses](docs/playback.md) for routes,
 source configuration, progress storage, CSP, and future provider integration.
@@ -196,3 +198,9 @@ BRYX_PLAYBACK_TEST_ORIGIN=http://localhost:3001 npm run test:playback:integratio
 ```
 
 Phase 6.2 source reviews, discovery commands, episode navigation and verification results: [Content expansion](docs/content-expansion.md).
+
+### Free bulk content discovery
+
+BryxTV's permanent constraint is zero content licensing fees and zero paid streaming-provider fees; basic website hosting is the only planned operating expense. YouTube discovery is inactive. Live discovery commands are blocked by the current policy; no API key is required. Existing synthetic fixtures and historical reports are retained for regression testing.
+
+See [bulk discovery, setup, review workflow and reports](docs/bulk-discovery.md). Existing licensed-provider research is historical context, not a plan to purchase content or player services.

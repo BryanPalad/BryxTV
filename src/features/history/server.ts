@@ -1,10 +1,9 @@
 import "server-only";
-import { resolveSources, resumableKeys, legacyOptions } from "@/features/playback/providers/resolver";
+import { resolveSources, legacyOptions } from "@/features/playback/providers/resolver";
 import { randomUUID } from "node:crypto";
 import { getPrisma } from "@/lib/db/prisma";
-import { authorizedSources } from "@/features/playback/data/sources";
 import { getMovieDetails, getTVDetails } from "@/lib/providers/tmdb/service";
-import { progressKey, sourceIdentity, type ProgressIdentity, type HistoryItem, type parseProgressInput } from "./types";
+import { progressKey, type ProgressIdentity, type HistoryItem, type parseProgressInput } from "./types";
 import type { ViewingProgress } from "@/generated/prisma/client";
 export function progressSource(target: ProgressIdentity) {
   return legacyOptions(target.mediaType === "demo" ? { mediaId: `demo:${target.demoId}` } : { mediaId: `tmdb:${target.mediaType}:${target.tmdbId}`, ...(target.mediaType === "tv" ? { season: target.seasonNumber, episode: target.episodeNumber } : {}) })[0]?.video ?? null;
@@ -36,9 +35,8 @@ export async function deleteProgress(userId: string, target: ProgressIdentity) {
 export interface HistoryQuery { page: number; type?: "movie" | "tv" | "demo"; continuing: boolean }
 export async function historyPage(userId: string, query: HistoryQuery) {
   const db = getPrisma();
-  const candidates = query.continuing ? await db.viewingProgress.findMany({ where: { userId, completed: false, positionSeconds: { gt: 0 } }, select: { contentKey: true } }) : [];
-  const playableKeys = [...authorizedSources.map(sourceIdentity).filter((target): target is ProgressIdentity => !!target && !!progressSource(target)).map(progressKey), ...(query.continuing ? await resumableKeys(candidates.map(row => row.contentKey)) : [])];
-  const where = { userId, ...(query.type ? { mediaType: query.type } : {}), ...(query.continuing ? { completed: false, positionSeconds: { gt: 0 }, contentKey: { in: playableKeys } } : {}) };
+  // Retain unfinished history even when delivery is withdrawn; presentation rechecks eligibility.
+  const where = { userId, ...(query.type ? { mediaType: query.type } : {}), ...(query.continuing ? { completed: false, positionSeconds: { gt: 0 } } : {}) };
   const size = query.continuing ? 12 : 24;
   const total = await db.viewingProgress.count({ where });
   const totalPages = Math.max(1, Math.ceil(total / size)), page = Math.min(query.page, totalPages);

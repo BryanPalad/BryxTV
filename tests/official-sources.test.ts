@@ -22,13 +22,13 @@ test("episode mapping uses explicit season numbers and compilations never masque
 test("all four viewing states fail closed for candidates, disabled sources and PH restrictions",()=>{
  const provider={...episode,status:"WATCH_ON_PROVIDER" as const,embedding:"UNSUPPORTED" as const};
  assert.equal(viewingState(true,[]),"WATCH_ON_BRYXTV");
- assert.equal(viewingState(false,[provider]),"WATCH_ON_PROVIDER");
+ assert.equal(viewingState(false,[provider]),"UNAVAILABLE");
  assert.equal(viewingState(false,[{...provider,region:"RESTRICTED_PH"}]),"UNAVAILABLE");
- assert.equal(viewingState(false,[episode]),"UNKNOWN");
+ assert.equal(viewingState(false,[episode]),"UNAVAILABLE");
  assert.equal(viewingState(false,[]),"UNAVAILABLE");
  assert.equal(viewingState(false,[],true),"UNKNOWN");
  assert.equal(viewingState(false,[{...provider,enabled:false}]),"UNAVAILABLE");
- assert.equal(viewingState(false,[{...provider,uploaderVerified:false}]),"UNKNOWN");
+ assert.equal(viewingState(false,[{...provider,uploaderVerified:false}]),"UNAVAILABLE");
  assert.equal(officialSourceSchema.safeParse({...provider,mappingVerified:false}).success,false);
 });
 test("internal YouTube approval requires identity, mapping, actual regional/embed checks and public access",()=>{
@@ -46,11 +46,11 @@ test("registered manifest contains only separately reviewed records and no accid
  assert.ok(rows.every(row=>row.tmdbId!==74890));
 });
 
-test("server review gate admits only the reviewed exact anime episode and excludes pending movies and compilations",async()=>{
+test("server gate excludes historical YouTube approvals, pending movies and compilations",async()=>{
  const {officialSources,officialEmbedAllowed}=await import("../src/features/playback/providers/official-sources.server");
- assert.equal(officialSources("tv",63926,3,1).length,1);
+ assert.equal(officialSources("tv",63926,3,1).length,0);
  assert.equal(officialSources("tv",244625,1,1).length,0);
- assert.equal(officialEmbedAllowed("https://www.youtube-nocookie.com/embed/t7KlZ38p39w","tv",63926,3,1),true);
+ assert.equal(officialEmbedAllowed("https://www.youtube-nocookie.com/embed/t7KlZ38p39w","tv",63926,3,1),false);
  assert.equal(officialEmbedAllowed("https://www.youtube-nocookie.com/embed/vZ7EMIH0oHw","movie",640828),false);
  assert.equal(officialEmbedAllowed("https://www.youtube-nocookie.com/embed/t7KlZ38p39w","tv",63926,1,25),false);
 });

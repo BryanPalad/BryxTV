@@ -79,9 +79,9 @@ test("navigation offers exact internal targets, explicit provider links, and no 
     "/watch/tv/63926?season=1&episode=2",
   );
   assert.deepEqual(episodeDestination(63926, e, false, [provider]), {
-    state: "WATCH_ON_PROVIDER",
-    href: `https://www.youtube.com/watch?v=${provider.videoId}`,
-    external: true,
+    state: "UNAVAILABLE",
+    href: null,
+    external: false,
   });
   for (const patch of [
     { status: "UNKNOWN" as const },

@@ -1,3 +1,4 @@
+import { providerEligible } from "./eligibility";
 import { z } from "zod";
 /** Reviewed channel identities; never a rule allowing every upload from a channel. */
 export const officialProviders = {
@@ -47,7 +48,7 @@ export function officialMatches(row: OfficialSource, type: "movie" | "tv", id: n
 }
 export function viewingState(playable: boolean, rows: OfficialSource[], pending = false): ViewingState {
   if (playable) return "WATCH_ON_BRYXTV";
-  const enabled = rows.filter(row => row.enabled);
+  const enabled = rows.filter(row => row.enabled && officialSourceEligible(row));
   if (enabled.some(row => row.status === "WATCH_ON_PROVIDER" && row.uploaderVerified && row.mappingVerified && row.embedding !== "UNKNOWN" && row.region !== "RESTRICTED_PH")) return "WATCH_ON_PROVIDER";
   return pending || enabled.some(row => row.region !== "RESTRICTED_PH") ? "UNKNOWN" : "UNAVAILABLE";
 }
@@ -66,3 +67,8 @@ export const officialManifestSchema = z.array(officialSourceSchema).superRefine(
     keys.add(row.key); videos.add(row.videoId);
   }
 });
+
+/** Historical reviews remain valid records but cannot override current product policy. */
+export function officialSourceEligible(row: OfficialSource) {
+  return providerEligible("youtube-privacy", officialWatchUrl(row));
+}
