@@ -204,3 +204,10 @@ Phase 6.2 source reviews, discovery commands, episode navigation and verificatio
 BryxTV's permanent constraint is zero content licensing fees and zero paid streaming-provider fees; basic website hosting is the only planned operating expense. YouTube discovery is inactive. Live discovery commands are blocked by the current policy; no API key is required. Existing synthetic fixtures and historical reports are retained for regression testing.
 
 See [bulk discovery, setup, review workflow and reports](docs/bulk-discovery.md). Existing licensed-provider research is historical context, not a plan to purchase content or player services.
+
+### Private staging preparation
+
+See [the staging deployment guide](docs/staging-deployment.md) and `.env.staging.example`.
+`npm run staging:check` validates explicitly injected staging values and checks both
+Neon branch identities read-only. Deployment-level protection must be configured
+before sharing any staging URL; no deployment automation is enabled by this phase.

@@ -13,6 +13,7 @@
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
     "db:check": "tsx scripts/check-db.ts",
+    "staging:check": "node --import tsx scripts/check-staging.ts",
     "test:auth:integration": "node --conditions=react-server --import tsx --test tests/auth.integration.test.ts",
     "db:migrate:deploy": "prisma migrate deploy",
     "test:auth:ui": "node --import tsx --test tests/ui/*.test.tsx",
