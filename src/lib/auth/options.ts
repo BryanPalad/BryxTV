@@ -1,7 +1,8 @@
 import { syncGoogleAvatar } from "./google-avatar";
 import type { BetterAuthOptions } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import { familyStaging, familyEmailAllowed, familyUserAllowed } from "./family-policy";
 import {
   loginSchema,
   displayNameSchema,
@@ -27,6 +28,7 @@ export const authOptions = {
   },
   user: {
     validateUserInfo: ({ user, source }) => {
+      if (!familyUserAllowed(user)) return { error: "family_access_denied" };
       // Validate the fresh Google claim on every OAuth sign-in, including
       // accounts explicitly linked by an authenticated password user.
       if (source.method === "oauth" && source.oauth?.providerId === "google" && user.emailVerified !== true)
@@ -60,6 +62,17 @@ export const authOptions = {
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (familyStaging()) {
+        const denied = () => new APIError("FORBIDDEN", { code: "FAMILY_ACCESS_DENIED", message: "This private preview is available only to invited family members with verified accounts." });
+        // No ownership-verification email service exists: never let someone
+        // claim an invited address by registering an unverified password account.
+        if (ctx.path === "/sign-up/email") throw denied();
+        if (ctx.path === "/sign-in/email" && !familyEmailAllowed(ctx.body?.email)) throw denied();
+        if (ctx.path !== "/sign-out") {
+          const session = await getSessionFromCtx(ctx, { disableCookieCache: true });
+          if (session && !familyUserAllowed(session.user)) throw denied();
+        }
+      }
       if (ctx.path === "/sign-up/email") {
         const name = displayNameSchema.safeParse(ctx.body?.name);
         if (!name.success)
@@ -85,6 +98,15 @@ export const authOptions = {
     }),
   },
   databaseHooks: {
+    session: {
+      create: { before: async (session, ctx) => {
+        if (familyStaging()) {
+          const user = await ctx?.context.internalAdapter.findUserById(session.userId);
+          if (!user || !familyUserAllowed(user)) throw new APIError("FORBIDDEN", { message: "Private preview access denied." });
+        }
+        return { data: session };
+      } },
+    },
     account: {
       create: { after: syncGoogleAvatar },
       update: { after: syncGoogleAvatar },
@@ -92,6 +114,7 @@ export const authOptions = {
     user: {
       create: {
         before: async (user) => {
+          if (!familyUserAllowed(user)) throw new APIError("FORBIDDEN", { message: "Private preview access denied." });
           const parsed = displayNameSchema.safeParse(user.name);
           if (!parsed.success)
             throw new APIError("BAD_REQUEST", {

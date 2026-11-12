@@ -4,6 +4,7 @@ import { AuthPage } from "@/features/auth/components/auth-page";
 import { LoginForm } from "@/features/auth/components/auth-forms";
 import { safeReturnTo } from "@/lib/auth/redirect";
 import type { SearchParams } from "@/types/catalog";
+import { familyStaging } from "@/lib/auth/family-policy";
 export const metadata = {
   title: "Sign in",
   robots: { index: false, follow: true },
@@ -17,7 +18,7 @@ export default async function Login({
   return (
     <AuthPage
       title="Welcome back."
-      description="Sign in to your BryxTV account."
+      description={familyStaging() ? "Private family preview. Sign in with your invited, verified account." : "Sign in to your BryxTV account."}
     >
       {params.oauth === "error" && (
         <p className="auth-message error" role="alert">{googleOAuthErrorMessage(params.error)}</p>

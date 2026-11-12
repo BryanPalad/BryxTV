@@ -72,7 +72,7 @@ test("login errors are generic and never include account existence or provider m
     authErrorMessage("login", 401),
     "Email or password is incorrect.",
   );
-  assert.equal(authErrorMessage("login", 403), authErrorMessage("login", 401));
+  assert.match(authErrorMessage("login", 403), /Access denied/);
   assert.match(authErrorMessage("login", 429), /wait a minute/);
   assert.match(authErrorMessage("logout", 503), /Unable to log out/);
   assert.match(

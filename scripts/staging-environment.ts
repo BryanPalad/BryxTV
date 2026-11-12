@@ -1,4 +1,6 @@
+import { familyAllowlist } from "../src/lib/auth/family-policy";
 export function validateStagingEnvironment(env: Record<string, string | undefined>) {
+  familyAllowlist(env);
   const required = ["BETTER_AUTH_SECRET", "DATABASE_URL", "DIRECT_URL", "STAGING_NEON_BRANCH_ID", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "TMDB_READ_ACCESS_TOKEN"];
   if (env.BRYXTV_ENV !== "staging" || required.some(key => !env[key]?.trim()) || env.BETTER_AUTH_SECRET!.length < 32 || !/^br-[a-z0-9-]+$/.test(env.STAGING_NEON_BRANCH_ID!))
     throw new Error("Missing staging configuration.");

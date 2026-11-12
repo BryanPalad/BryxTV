@@ -3,8 +3,10 @@ import { betterAuth } from "better-auth/minimal";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { getPrisma } from "@/lib/db/prisma";
 import { authOptions, googleProviderOptions } from "./options";
+import { familyAllowlist, familyStaging } from "./family-policy";
 
 function createAuth() {
+  familyAllowlist();
   const secret = process.env.BETTER_AUTH_SECRET;
   const configuredURL = process.env.BETTER_AUTH_URL;
   if (!secret || secret.length < 32 || !configuredURL)
@@ -22,6 +24,7 @@ function createAuth() {
     throw new Error("Authentication requires a valid application origin.");
   return betterAuth({
     ...authOptions,
+    emailAndPassword: { ...authOptions.emailAndPassword, requireEmailVerification: familyStaging() },
     appName: "BryxTV",
     baseURL: url.origin,
     secret,

@@ -4,6 +4,7 @@ export function authErrorMessage(
 ) {
   if (status === 429)
     return "Too many attempts. Please wait a minute and try again.";
+  if (status === 403) return "Access denied. This private preview requires an invited, verified account. Contact the owner for access.";
   if (kind === "login")
     return status === 401 || status === 403
       ? "Email or password is incorrect."

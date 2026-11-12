@@ -6,6 +6,7 @@ export const GOOGLE_SIGN_IN_ERROR =
 
 /** Only recognized codes select fixed copy; never display provider descriptions. */
 export function googleOAuthErrorMessage(code: unknown): string {
+  if (code === "family_access_denied") return "Access denied. This private preview is available only to invited family members.";
   if (code === "account_not_linked")
     return "This email already has a BryxTV account. Sign in with your password, open Your profile, then choose Connect Google.";
   if (code === "email_does_not_match")

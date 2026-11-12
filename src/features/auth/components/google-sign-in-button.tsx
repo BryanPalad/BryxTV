@@ -9,10 +9,12 @@ export function GoogleSignInButton({
   returnTo,
   enabled,
   mode = "sign-in",
+  showEmailDivider = true,
 }: {
   returnTo: string;
   enabled: boolean;
   mode?: "sign-in" | "link";
+  showEmailDivider?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -59,7 +61,7 @@ export function GoogleSignInButton({
       </button>
       {!enabled && <p className="auth-social-note">Google sign-in is temporarily unavailable. You can use email below.</p>}
       {error && <p className="auth-field-error" role="alert">{GOOGLE_SIGN_IN_ERROR}</p>}
-      {mode === "sign-in" && <div className="auth-divider"><span>or continue with email</span></div>}
+      {mode === "sign-in" && showEmailDivider && <div className="auth-divider"><span>or continue with email</span></div>}
     </div>
   );
 }

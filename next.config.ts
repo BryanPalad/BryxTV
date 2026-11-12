@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
-          ...(process.env.BRYXTV_ENV === "staging"
+          ...(process.env.BRYXTV_ENV === "staging" || process.env.VERCEL_ENV === "preview"
             ? [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }]
             : []),
           { key: "Content-Security-Policy", value: policy },

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateStagingEnvironment } from "../scripts/staging-environment";
 const valid = {
+  STAGING_ALLOWED_EMAILS: "fixture@example.com",
   BRYXTV_ENV: "staging", NEXT_PUBLIC_APP_URL: "https://staging.example.com", BETTER_AUTH_URL: "https://staging.example.com",
   BETTER_AUTH_SECRET: "x".repeat(32), DATABASE_URL: "postgresql://test:test@ep-test-pooler.neon.tech/db?sslmode=verify-full",
   DIRECT_URL: "postgresql://test:test@ep-test.neon.tech/db?sslmode=verify-full", STAGING_NEON_BRANCH_ID: "br-test-only",

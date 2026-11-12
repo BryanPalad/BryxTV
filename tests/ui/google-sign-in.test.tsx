@@ -16,6 +16,12 @@ const { render, fireEvent, waitFor, cleanup } = await import("@testing-library/r
 const { GoogleSignInButton } = await import("../../src/features/auth/components/google-sign-in-button");
 afterEach(() => cleanup());
 
+test("invitation-only registration omits the password divider", () => {
+  const view = render(<GoogleSignInButton enabled returnTo="/" showEmailDivider={false} />);
+  assert.ok(view.getByRole("button", { name: "Continue with Google" }));
+  assert.equal(view.queryByText("or continue with email"), null);
+});
+
 test("Google button initiates social sign-in with safe callbacks, stays busy, and prevents duplicate requests", async () => {
   const calls: unknown[] = [];
   handleFetch = async (input, init) => {
