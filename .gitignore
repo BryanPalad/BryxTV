@@ -44,3 +44,12 @@ next-env.d.ts
 
 # Keep the credential-free template tracked
 !.env.example
+!.env.staging.example
+
+# Prisma Client is regenerated from the schema after npm install.
+/src/generated/prisma/
+
+# Private local discovery cache, review queues, and generated reports
+/.bryxtv/
+/reports/discovery/
+/reports/reviews/

@@ -1,3 +1,5 @@
+import { watchableCatalog } from "@/features/playback/providers/watchable-catalog";
+import { ContinueWatching } from "@/features/history/components/continue-watching";
 import { RouteTransition } from "@/components/layout/route-transition";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -29,67 +31,20 @@ export default async function Home({
     redirect(`${categoryHref(legacyCategory)}${query.size ? `?${query}` : ""}`);
   }
   const definitions = [
-    {
-      id: "trending",
-      title: "Trending Now",
-      description: "The movies making waves this week.",
-      category: "Movies" as const,
-      index: 0,
-    },
-    {
-      id: "now-playing",
-      title: "Now Playing in Theaters",
-      description: "Discover current theatrical releases.",
-      category: "Movies" as const,
-      index: 1,
-    },
-    {
-      id: "popular-movies",
-      title: "Popular Movies",
-      description: "Find your next great film.",
-      category: "Movies" as const,
-      index: 2,
-    },
-    {
-      id: "top-rated",
-      title: "Top Rated Movies",
-      description: "Favorites from the TMDB community.",
-      category: "Movies" as const,
-      index: 3,
-    },
-    {
-      id: "popular-series",
-      title: "Popular TV Series",
-      description: "Your next one-more-episode obsession.",
-      category: "TV Series" as const,
-      index: 1,
-    },
-    {
-      id: "anime-spotlight",
-      title: "Anime Spotlight",
-      description: "Japanese animation. Extraordinary imagination.",
-      category: "Anime" as const,
-      index: 0,
-    },
-    {
-      id: "korean-dramas",
-      title: "Korean Dramas",
-      description: "Korean-language television with a story to tell.",
-      category: "K-Drama" as const,
-      index: 0,
-    },
-    {
-      id: "disney-collection",
-      title: "Disney Collection",
-      description:
-        "From Walt Disney Pictures, Pixar, and Disney Animation. Production credits, not Disney+ availability.",
-      category: "Disney" as const,
-      index: 0,
-    },
+    { id: "trending-anime", title: "Trending Anime", description: "Weekly anime discoveries, with popular series when weekly results are sparse.", category: "Anime" as const, collectionKey: "trending" },
+    { id: "popular-k-dramas", title: "Popular K-Dramas", description: "Korean stories to discover. Viewing availability is shown on each title.", category: "K-Drama" as const, collectionKey: "popular" },
+    { id: "anime-movies", title: "Anime Movies", description: "Japanese animated films, from new discoveries to familiar favorites.", category: "Anime" as const, collectionKey: "movies" },
+    { id: "korean-movies", title: "Korean Movies", description: "Explore Korean cinema. Catalog inclusion does not guarantee streaming access.", category: "K-Drama" as const, collectionKey: "movies" },
+    { id: "trending", title: "Trending Movies", description: "The movies making waves this week.", category: "Movies" as const, collectionKey: "trending" },
+    { id: "now-playing", title: "Now Playing in Theaters", description: "Discover current theatrical releases.", category: "Movies" as const, collectionKey: "now-playing" },
+    { id: "popular-movies", title: "Popular Movies", description: "Find your next great film.", category: "Movies" as const, collectionKey: "popular" },
+    { id: "top-rated", title: "Top Rated Movies", description: "Favorites from the TMDB community.", category: "Movies" as const, collectionKey: "top-rated" },
+    { id: "popular-series", title: "Popular TV Series", description: "More stories from around the world.", category: "TV Series" as const, collectionKey: "popular" },
+    { id: "disney-collection", title: "Disney Collection", description: "Disney production credits, not Disney+ availability.", category: "Disney" as const, collectionKey: "popular" },
   ];
   const rows = await Promise.all(
     definitions.map(async (definition) => {
-      const collection = collections[definition.category][definition.index]!;
+      const collection = collections[definition.category].find(collection => collection.key === definition.collectionKey)!;
       return {
         ...definition,
         collection,
@@ -97,10 +52,9 @@ export default async function Home({
       };
     }),
   );
+  const watchable = await watchableCatalog();
   const trending = rows[0]?.result;
-  const featured = trending?.ok
-    ? trending.data.items.filter((item) => item.backdropUrl).slice(0, 5)
-    : [];
+  const featured = rows.slice(0,2).flatMap(row => row.result.ok ? row.result.data.items.filter(item => item.backdropUrl).slice(0,3) : []).slice(0,5);
   return (
     <RouteTransition>
       <a href="#main" className="skip-link">
@@ -124,6 +78,10 @@ export default async function Home({
           </div>
         )}
         <div className="catalog-content">
+          <ContinueWatching />
+          {([{id:"watchable-anime",title:"Watchable Anime",items:watchable.anime},{id:"watchable-k-dramas",title:"Watchable K-Dramas",items:watchable.drama}]).filter(row => row.items.length > 0).map(row => <ContentRow key={row.id} id={row.id} heading={<SectionHeading id={row.id} title={row.title} description="Official episodes verified for playback. Choose a title to see available episodes." />}>
+            {row.items.map(item => <MediaCard key={item.id} item={item} />)}
+          </ContentRow>)}
           {rows.map((row) => (
             <ContentRow
               key={row.id}

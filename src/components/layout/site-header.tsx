@@ -1,11 +1,12 @@
+import { WatchlistNav } from "@/features/watchlist/components/watchlist-nav";
+import { AccountMenu } from "@/features/auth/components/account-menu";
 import { BrandLogo } from "@/components/branding/brand-logo";
 import Link from "next/link";
-import { Bookmark, UserRound } from "lucide-react";
 import { categories, categoryHref, type Category } from "@/constants/site";
 import { MobileNavigation } from "./mobile-navigation";
 import { SearchTrigger } from "@/features/catalog/components/search-trigger";
 
-export function SiteHeader({ active }: { active: Category }) {
+export function SiteHeader({ active }: { active: Category | "My List" | "History" }) {
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -22,25 +23,11 @@ export function SiteHeader({ active }: { active: Category }) {
               {category}
             </Link>
           ))}
+          <WatchlistNav />
         </nav>
         <div className="header-actions">
           <SearchTrigger />
-          <button
-            className="icon-button watchlist-placeholder"
-            disabled
-            aria-label="Watchlist — coming soon"
-            title="Watchlist coming soon"
-          >
-            <Bookmark size={20} />
-          </button>
-          <button
-            className="profile-placeholder"
-            disabled
-            aria-label="User profile — sign-in coming soon"
-            title="Sign-in coming soon"
-          >
-            <UserRound size={18} />
-          </button>
+          <AccountMenu />
           <MobileNavigation active={active} />
         </div>
       </div>

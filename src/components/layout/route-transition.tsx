@@ -19,8 +19,8 @@ export function RouteTransition({ children }: { children: ReactNode }) {
   return (
     <ViewTransition
       default="none"
-      enter={{ "open-title": "title-enter", default: "route-enter" }}
-      exit="route-exit"
+      enter={{ auth: "auth-enter", "open-title": "title-enter", default: "route-enter" }}
+      exit={{ auth: "auth-exit", default: "route-exit" }}
     >
       <div
         className={

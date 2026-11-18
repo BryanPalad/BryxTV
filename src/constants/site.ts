@@ -2,15 +2,15 @@ export const site = {
   name: "BryxTV",
   tagline: "Every Story. One Screen.",
   description:
-    "Discover your next favorite story. Explore movies, series, anime, Disney, and K-drama on BryxTV.",
+    "Discover popular anime, K-dramas, anime films and Korean cinema on BryxTV, alongside movies, series and Disney productions.",
 } as const;
 export const categories = [
   "Home",
+  "Anime",
+  "K-Drama",
   "Movies",
   "TV Series",
   "Disney",
-  "Anime",
-  "K-Drama",
 ] as const;
 export type Category = (typeof categories)[number];
 export const categoryPaths: Record<Category, string> = {

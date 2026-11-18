@@ -251,3 +251,9 @@ test("client sanitizes status errors, network failures, malformed JSON, and time
     );
   }
 });
+
+test("development-only film is excluded from normal metadata browsing without hiding discovery-only anime",()=>{
+ const page=normalizePage({page:1,total_pages:1,total_results:3,results:[{id:74890,title:"Valkaama",adult:false,media_type:"movie"},{id:127532,name:"Solo Leveling",adult:false,media_type:"tv",original_language:"ja",genre_ids:[16]},{id:74890,name:"Unrelated TV fixture",adult:false,media_type:"tv"}]});
+ assert.deepEqual(page.items.map(item=>item.externalId),[127532,74890]);
+ assert.equal(page.items[0]!.isPlayable,false);
+});

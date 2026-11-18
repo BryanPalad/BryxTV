@@ -108,7 +108,7 @@ export function normalizePage(raw: TMDBPage, type?: MediaType): MediaPage {
     items: raw.results
       .filter(
         (item) =>
-          !item.adult &&
+          !(item.id === 74890 && (type ?? item.media_type) === "movie") && !item.adult &&
           (type || item.media_type === "movie" || item.media_type === "tv"),
       )
       .map((item) =>

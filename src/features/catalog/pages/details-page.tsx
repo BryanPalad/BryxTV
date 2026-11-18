@@ -1,3 +1,9 @@
+import { OfficialViewing } from "@/features/playback/components/official-viewing";
+import { officialSources } from "@/features/playback/providers/official-sources.server";
+import { viewingState } from "@/features/playback/providers/official-policy";
+import { DetailProgress } from "@/features/history/components/detail-progress";
+import { Suspense } from "react";
+import { WatchlistButton } from "@/features/watchlist/components/watchlist-button";
 import { RouteTransition } from "@/components/layout/route-transition";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -15,6 +21,9 @@ import * as tmdb from "@/lib/providers/tmdb/service";
 import { TMDBError, catalogErrorMessage } from "@/lib/providers/tmdb/errors";
 import { validateId } from "@/lib/providers/tmdb/validation";
 import { selectTrailer } from "@/lib/providers/tmdb/normalize";
+import { titleAvailability } from "@/features/playback/providers/resolver";
+import { EpisodeSelector } from "@/features/playback/components/episode-selector";
+import type { SearchParams } from "@/types/catalog";
 import type { MediaType } from "@/types/catalog";
 
 async function loadTitle(type: MediaType, id: string) {
@@ -58,7 +67,9 @@ export async function detailsMetadata(
 export async function DetailsPage({
   type,
   params,
+  searchParams,
 }: {
+  searchParams?: Promise<SearchParams>;
   type: MediaType;
   params: Promise<{ id: string }>;
 }) {
@@ -91,6 +102,11 @@ export async function DetailsPage({
     ),
     tmdb.catalogResult(() => tmdb.getRecommendations(type, id)),
   ]);
+  const query = searchParams ? await searchParams : {};
+  const availability = await titleAvailability(type, Number(id));
+  const source = availability.sources[0];
+  const official = officialSources(type,Number(id));
+  const state = viewingState(!!source,official,availability.pendingKeys.length > 0 || availability.failed);
   const trailer = videos.ok ? selectTrailer(videos.data) : null;
   return (
     <RouteTransition>
@@ -162,18 +178,35 @@ export async function DetailsPage({
                 )}
               </p>
               <p className="detail-description">{item.overview}</p>
-              <aside className="playback-notice">
-                <Info size={20} aria-hidden="true" />
-                <div>
-                  <h2>Streaming unavailable</h2>
-                  <p>
-                    BryxTV provides discovery information for this title. No
-                    authorized playback source is configured.
-                  </p>
-                </div>
-              </aside>
+              <WatchlistButton tmdbId={item.externalId} mediaType={item.mediaType} title={item.title} />
+              <OfficialViewing rows={official} playable={!!source} pending={availability.pendingKeys.length > 0 || availability.failed} />
+              {source ? (
+                <Suspense fallback={<Link className="playback-button" href={type === "movie" ? `/watch/movie/${id}` : `/watch/tv/${id}?season=${source.seasonNumber}&episode=${source.episodeNumber}`}>Watch Now</Link>}>
+                  <DetailProgress mediaType={type} tmdbId={Number(id)} fallbackHref={type === "movie" ? `/watch/movie/${id}` : `/watch/tv/${id}?season=${source.seasonNumber}&episode=${source.episodeNumber}`} />
+                </Suspense>
+              ) : (
+                <>
+                <Suspense fallback={null}><DetailProgress mediaType={type} tmdbId={Number(id)} /></Suspense>
+                {state === "UNAVAILABLE" && <aside className="playback-notice">
+                  <Info size={20} aria-hidden="true" />
+                  <div>
+                    <h2>{availability.pendingKeys.length > 0 ? "Playback pending verification" : "Video Not Available"}</h2>
+                    <p>
+                      {availability.pendingKeys.length > 0 ? "Sources are awaiting playback verification." : availability.failed ? "Playback sources are temporarily unavailable. Please try again later." : "No approved playback source is available for this title on BryxTV."}
+                    </p>
+                  </div>
+                </aside>}
+                </>
+              )}
             </div>
           </div>
+          {type === "tv" && (
+            <EpisodeSelector
+              id={id}
+              selected={query.season}
+              pathname={`/tv/${id}`}
+            />
+          )}
           <section className="detail-section" aria-labelledby="cast-heading">
             <h2 id="cast-heading">Cast</h2>
             {!credits.ok ? (

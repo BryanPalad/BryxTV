@@ -93,6 +93,14 @@ export const collections: Record<BrowseCategory, Collection[]> = {
   ],
   Anime: [
     {
+      key: "trending", title: "Trending Anime",
+      load: async (page) => {
+        const weekly = normalizePage(await tmdb.getTrendingTV(page), "tv");
+        const items = weekly.items.filter(item => item.originalLanguage === "ja" && item.genreIds.includes(16));
+        return items.length ? { ...weekly, items } : normalizePage(await tmdb.discoverTV({page,with_genres:"16",with_original_language:"ja",sort_by:"popularity.desc"}),"tv");
+      },
+    },
+    {
       key: "tv",
       title: "Japanese Animation · Series",
       load: async (page) =>
@@ -150,6 +158,10 @@ export const collections: Record<BrowseCategory, Collection[]> = {
           }),
           "tv",
         ),
+    },
+    {
+      key: "movies", title: "Korean Movies",
+      load: async (page) => normalizePage(await tmdb.discoverMovies({page,with_original_language:"ko",sort_by:"popularity.desc"}),"movie"),
     },
   ],
 };
