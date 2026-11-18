@@ -34,8 +34,8 @@ test("Better Auth enforces family login, registration, OAuth claims and revoked 
     const hash = await hashPassword(password);
     const users = ["family", "stranger", "unverified"].map(id => ({ id, name: id, email: `${id}@example.com`, emailVerified: id !== "unverified", createdAt: now, updatedAt: now }));
     const db = { user: users, account: users.map(user => ({ id: `account-${user.id}`, userId: user.id, providerId: "credential", accountId: user.id, password: hash, createdAt: now, updatedAt: now })), session: [] as Record<string, unknown>[], verification: [] };
-    const auth = betterAuth({ ...authOptions, plugins: [], secret: "test-only-secret-with-more-than-32-characters", baseURL: "http://localhost:3999", database: memoryAdapter(db), emailAndPassword: { ...authOptions.emailAndPassword, requireEmailVerification: true } });
-    const call = (path: string, body?: object, cookie?: string) => auth.handler(new Request(`http://localhost:3999/api/auth/${path}`, { method: body ? "POST" : "GET", headers: { origin: "http://localhost:3999", "content-type": "application/json", ...(cookie ? { cookie } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) }));
+    const auth = betterAuth({ ...authOptions, plugins: [], secret: "test-only-secret-with-more-than-32-characters", baseURL: "https://staging.example.com", database: memoryAdapter(db), emailAndPassword: { ...authOptions.emailAndPassword, requireEmailVerification: true } });
+    const call = (path: string, body?: object, cookie?: string) => auth.handler(new Request(`https://staging.example.com/api/auth/${path}`, { method: body ? "POST" : "GET", headers: { origin: "https://staging.example.com", "content-type": "application/json", ...(cookie ? { cookie } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) }));
     for (const email of ["family@example.com", "stranger@example.com"]) {
       assert.equal((await call("sign-up/email", { name: "Family Test", email, password })).status, 403);
     }
@@ -46,6 +46,8 @@ test("Better Auth enforces family login, registration, OAuth claims and revoked 
     assert.equal(login.status, 200);
     const cookie = login.headers.getSetCookie().map(value => value.split(";")[0]).join("; ");
     assert.ok(cookie);
+    assert.ok(login.headers.getSetCookie().some(value => /; Secure/i.test(value) && /; HttpOnly/i.test(value) && /; SameSite=Lax/i.test(value)));
+    assert.equal(await (await call("get-session", undefined, "__Secure-better-auth.session_token=invalid.signature")).json(), null);
     assert.equal((await call("get-session", undefined, cookie)).status, 200);
     // Exercise the exact installed provider hook with fresh verified/unverified claims.
     const source = { method: "oauth" as const, action: "sign-in" as const, oauth: { providerId: "google" } };

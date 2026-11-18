@@ -13,6 +13,8 @@ export type PlaybackSource = PlaybackTarget & {
   id: string;
   sourceUrl: string;
   sourceType: "mp4" | "hls";
+  /** null omits CORS mode for explicitly reviewed native-video delivery. */
+  crossOrigin?: "anonymous" | null;
   title: string;
   description: string;
   subtitles?: SubtitleTrack[];

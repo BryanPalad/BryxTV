@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts && npm run test:auth:ui",
+    "test": "node --conditions=react-server --import tsx --test tests/*.test.ts && npm run test:auth:ui && npm run test:security",
     "postinstall": "prisma generate",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
@@ -23,7 +23,8 @@
     "test:playback:integration": "node --conditions=react-server --import tsx --test tests/playback-providers.integration.test.ts",
     "playback:discover": "node --import tsx scripts/discover-official-video.ts",
     "content:discover": "node --conditions=react-server --import tsx scripts/content-discover.ts",
-    "content:review": "node --conditions=react-server --import tsx scripts/content-review.ts"
+    "content:review": "node --conditions=react-server --import tsx scripts/content-review.ts",
+    "test:security": "node --experimental-test-module-mocks --conditions=react-server --import tsx --test tests/security/*.test.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "1.7.12",

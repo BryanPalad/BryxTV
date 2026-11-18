@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { playbackFrameOrigins, playbackMediaOrigins } from "./src/features/playback/providers/registry";
+import { validationMovieURL, validationPath } from "./src/features/playback/development/validation-policy";
 const nextConfig: NextConfig = {
   // OAuth callbacks contain short-lived codes; omit them from dev access logs.
   logging: {
@@ -35,6 +36,11 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
+      // Only local next dev: no catalog/global/Preview/Production origin expansion.
+      ...(development && !process.env.VERCEL_ENV ? [{
+        source: validationPath,
+        headers: [{ key: "Content-Security-Policy", value: policy.replace(/media-src[^;]*/, `media-src 'self' blob: ${validationMovieURL}`) }],
+      }] : []),
       {
         source: "/playback/:path*.m3u8",
         headers: [

@@ -55,7 +55,7 @@ export default function VideoPlayer({ source, restart = false }: { source: Playb
               src={source.sourceUrl}
               playsInline
               preload="metadata"
-              crossOrigin="anonymous"
+              crossOrigin={source.crossOrigin === null ? undefined : "anonymous"}
               onLoadedMetadata={onReady}
               onCanPlay={onReady}
               onPlay={onPlay}
